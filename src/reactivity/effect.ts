@@ -1,7 +1,15 @@
+import { extend } from "./shared";
+
 class reactiveEffect {
     private _fn: any;
-    constructor(fn, public scheduler) {//用public的话，在外部可以访问到这个变量。scheduler已经被track放进set里面了。
+    public scheduler: Function | undefined;
+    public deps = [];
+    public effect: any;
+    private active = true;
+    onStop?: () => void;//WRONG IN 220503
+    constructor(fn, scheduler?: Function) {//用public的话，在外部可以访问到这个变量。scheduler已经被track放进set里面了。
         this._fn = fn
+        this.scheduler = scheduler
     }
     run() {
         activeEffect = this//一定要放上面。因为track是在run前和run后之间触发的(这是因为track在reactive.get的return之前)，如果放在后面，全局变量就会是undefine，然后track会把这个undefine收集进去。
@@ -12,6 +20,19 @@ class reactiveEffect {
 
         // console.log('run后')
     }
+    stop() {
+        if (this.active) {
+            stopEffect(this)
+            if (this.onStop) {
+                this.onStop()
+            }
+            this.active = false
+        }
+    }
+}
+
+function stopEffect(effect) {
+    effect.deps.forEach((dep: any) => { dep.delete(effect) })
 }
 
 let targetMap = new Map()
@@ -29,7 +50,9 @@ export function track(target, key) {
         depsMap.set(key, dep)
     }
     //即使是完全一样的函数，放到Set里面也是两个元素。
+    if (!dep) { return; }
     dep.add(activeEffect)
+    activeEffect.deps.push(dep)
 }
 
 export function trigger(target, key) {
@@ -49,6 +72,13 @@ let activeEffect;//临时的全局变量
 export function effect(fn: any, options: any = {}) {
     const scheduler = options.scheduler
     let _effect = new reactiveEffect(fn, scheduler);
+    extend(_effect, options)
     _effect.run()
-    return _effect.run.bind(_effect)//不用bind会变全局变量
+    const runner: any = _effect.run.bind(_effect)//不用bind会变全局变量
+    runner.effect = _effect//WRONG IN 220503
+    return runner
+}
+
+export function stop(runner) {
+    runner.effect.stop()
 }
