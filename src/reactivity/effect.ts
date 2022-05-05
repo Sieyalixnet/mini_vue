@@ -59,13 +59,18 @@ export function track(target, key) {
         depsMap.set(key, dep)
     }
     //即使是完全一样的函数，放到Set里面也是两个元素。
+    trackEffect(dep)
+}
+
+export function isTracking(){
+    return  activeEffect !== undefined && shouldTrack == true //WRONG IN 20220505. 不是!deps 而是 activeEffect
+
+}
+
+export function trackEffect(dep){
     if(dep.has(activeEffect)){return;}
     dep.add(activeEffect)//记得依赖中全是effect,并且是属于reactiveEffect的实例
     activeEffect.deps.push(dep)
-}
-
-function isTracking(){
-    return  activeEffect !== undefined && shouldTrack == true //WRONG IN 20220505. 不是!deps 而是 activeEffect
 
 }
 
@@ -73,6 +78,10 @@ export function trigger(target, key) {
     // console.log('trigger')
     let depsMap = targetMap.get(target)
     let dep = depsMap.get(key)
+    triggerEffect(dep)
+}
+
+export function triggerEffect(dep){
     dep.forEach((effect) => {
         // console.log(effect)
         if (effect.scheduler) { effect.scheduler() } else { effect.run() }
@@ -80,6 +89,7 @@ export function trigger(target, key) {
     // for(const effect of dep){
     //     effect.run()
     // }
+
 }
 
 export function effect(fn: any, options: any = {}) {
