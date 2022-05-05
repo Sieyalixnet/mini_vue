@@ -67,7 +67,12 @@ describe('effect', () => {
             obj.prop = 2;
             expect(dummy).toBe(2);
             stop(runner);
-            obj.prop = 3;//按理说触发了effect，不过停止了，导致值没有变
+            // obj.prop = 3;//按理说触发了effect，不过停止了，导致值没有变
+            obj.prop++//这里是stop优化内容,如果这样写,stop就没其效果.
+            //如果是obj.prop=3,这是个set操作
+            //但如果用++,则会既触发get set
+            //obj.prop(SET)=obj.prop(GET)+1
+
             expect(dummy).toBe(2);
 
             //stopped effect should still be manually callable
