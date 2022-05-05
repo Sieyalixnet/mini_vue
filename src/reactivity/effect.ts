@@ -83,7 +83,7 @@ export function trigger(target, key) {
 }
 
 export function effect(fn: any, options: any = {}) {
-    console.log('this is effect')
+    // console.log('this is effect')
     const scheduler = options.scheduler
     let _effect = new reactiveEffect(fn, scheduler);
     extend(_effect, options)//这里就把onStop等绑了进去
