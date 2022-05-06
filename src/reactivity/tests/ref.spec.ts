@@ -1,5 +1,6 @@
 import {effect} from "../effect";
-import {ref} from "../ref";
+import { reactive,isReactive } from "../reactive";
+import {isRef, ref, unRef} from "../ref";
 
 describe("ref",()=>{
 
@@ -41,4 +42,27 @@ describe("ref",()=>{
 
     })
 
+    it('isRef',()=>{
+            const a = ref(1)
+            const user = reactive({age:1})
+            expect(isRef(a)).toBe(true)
+            expect(isRef(1)).toBe(false)
+            expect(isRef(user)).toBe(false)
+
+    })
+
+
+    it('unRef',()=>{
+        const a = ref(1)
+        expect(unRef(a)).toBe(1)
+        expect(unRef(1)).toBe(1)
+
+        const user = {age:1}
+        const userRef = ref(user)
+        const unRefUser = unRef(userRef)
+        // console.log(user,',',userRef,',',unRefUser)
+        console.log(isReactive(user))
+        console.log(isReactive(unRefUser))
+
+})
 })

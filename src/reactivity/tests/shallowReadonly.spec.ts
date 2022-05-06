@@ -1,4 +1,4 @@
-import { isReadonly, shallowReadonly } from "../reactive";
+import { isReactive, isReadonly, shallowReadonly } from "../reactive";
 
 describe("shallowReadonly",()=>{
 
@@ -6,6 +6,7 @@ describe("shallowReadonly",()=>{
         const props = shallowReadonly({n:{foo:1}})
         expect(isReadonly(props)).toBe(true);
         expect(isReadonly(props.n)).toBe(false);
+        // console.log(isReactive(props.n))//false
         //只有外部是readonly,但是内部的数据不是.
 
     })

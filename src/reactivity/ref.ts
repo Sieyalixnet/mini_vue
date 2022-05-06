@@ -5,6 +5,7 @@ import { hasChanged, isObject } from "./shared";
 class Refimpl{
     private _rawValue:any;
     private _value: any;
+    public __v_isRef=true;
     public dep;
 
     constructor(value){
@@ -12,7 +13,7 @@ class Refimpl{
         this._value= convert(value);
         this.dep=new Set();
     }
-    get value(){
+    get value(){//注:这个value就是外部访问的变量.value.
         if(isTracking()){
             trackEffect(this.dep)
         }
@@ -34,5 +35,14 @@ function convert(value){
 
 export function ref(value){
     return new Refimpl(value)
+
+}
+
+export function isRef(ref){
+    return !!ref.__v_isRef
+}
+
+export function unRef(ref){
+    return isRef(ref)?ref._rawValue:ref;
 
 }
