@@ -2,7 +2,7 @@ import { extend } from "./shared";
 
 let activeEffect;//临时的全局变量
 let shouldTrack;
-class reactiveEffect {
+export class reactiveEffect {
     private _fn: any;
     public scheduler: Function | undefined;
     deps = [];//装着依赖set的Array
