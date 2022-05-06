@@ -1,6 +1,6 @@
 import {effect} from "../effect";
 import { reactive,isReactive } from "../reactive";
-import {isRef, ref, unRef} from "../ref";
+import {isRef, proxyRefs, ref, unRef} from "../ref";
 
 describe("ref",()=>{
 
@@ -61,8 +61,38 @@ describe("ref",()=>{
         const userRef = ref(user)
         const unRefUser = unRef(userRef)
         // console.log(user,',',userRef,',',unRefUser)
-        console.log(isReactive(user))
-        console.log(isReactive(unRefUser))
+        // console.log(isReactive(user))
+        // console.log(isReactive(unRefUser))
 
 })
+
+    it('proxyRefs',()=>{
+        const user = {
+            age:ref(10),
+            name:"xiaohong"
+        }
+        const proxyUser = proxyRefs(user);
+        expect(user.age.value).toBe(10);
+        expect(proxyUser.age).toBe(10);
+        expect(proxyUser.name).toBe("xiaohong");
+        //这是因为在setup返回了ref之后. 在template中,我们使用ref时不需要每次都调用 变量.value 来实现
+        //ref->ref.value  ;  noRef -> var本身
+
+        proxyUser.age = 20;
+        expect(proxyUser.age).toBe(20);
+        expect(user.age.value).toBe(20);
+        //ref->修改ref.value  ;  noRef -> 修改var本身
+
+
+        proxyUser.age = ref(10);
+        expect(proxyUser.age).toBe(10);
+        expect(user.age.value).toBe(10);        
+        
+
+    }
+    
+
+    )
+
+
 })
