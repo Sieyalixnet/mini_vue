@@ -1,6 +1,6 @@
 import { track, trigger } from "./effect"
 import { ReactiveFlags } from "./reactive"
-import { extend } from "./shared"
+import { extend } from "../shared"
 
 const get =createGetter()
 const set =createSetter()

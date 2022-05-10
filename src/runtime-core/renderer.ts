@@ -5,7 +5,8 @@ export function render(vnode, container){
 }
 
 function patch(vnode: any, container: any) {
-    //TODO 判断是不是element
+    //TODO 判断是不是element,如果是element的话就处理element
+    // processElement()
     processComponent(vnode,container)
 }
 
