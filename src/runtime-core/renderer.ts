@@ -22,8 +22,9 @@ function processElement(vnode: any, container: any) {
 }
 
 function mountElement(vnode: any, container: any) {
-
+    
     const el = document.createElement(vnode.type);
+    vnode.el = el;
     const { children } = vnode;
     if (typeof children === "string") {
         el.textContent = children
@@ -51,17 +52,20 @@ function processComponent(vnode: any, container: any) {
     mountComponent(vnode, container)
 }
 
-function mountComponent(vnode: any, container: any) {
-    const instance = createComponentInstance(vnode)
+function mountComponent(initialVNode: any, container: any) {
+    const instance = createComponentInstance(initialVNode)
     setupComponent(instance)
-    setupRenderEffect(instance, container)
+    setupRenderEffect(instance, initialVNode,container)
 }
 
 
-function setupRenderEffect(instance: any, container: any) {
-    const subTree = instance.render()
+function setupRenderEffect(instance: any, initialVNode:any ,container: any) {
+    const {proxy} = instance;
+    const subTree = instance.render.call(proxy)//由于这里指向了proxy,而render中的this.xx都会通过proxy拿到.而proxy虽然是个{},但是由于它get中可以返回对应的值,所以也就能拿到相应的值了.
+    
     //vnode-> patch
     //vnode -> element -> mountElement
     patch(subTree, container)
+    initialVNode.el = subTree.el//这个subTree的el就是上面Element的el. 也就是从把Element的el不断向上传,这样在外部才能获取到$el.
 }
 
