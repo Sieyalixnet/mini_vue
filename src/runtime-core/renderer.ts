@@ -1,4 +1,5 @@
 import { isObject } from "../shared/index";
+import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component"
 
 export function render(vnode, container) {
@@ -7,11 +8,11 @@ export function render(vnode, container) {
 
 function patch(vnode: any, container: any) {
     //TODO 判断是不是element,如果是element的话就处理element
-    debugger;
     //WRONG IN 20220510 vnode.type，如果是虚拟节点就是Object，如果是Element，则其typeof是string，而其值就是需要创建的元素，比如div、p等。
-    if (typeof vnode.type == "string") {
+    debugger
+    if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
         processElement(vnode, container)
-    } else if (isObject(vnode.type)) {
+    } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
         processComponent(vnode, container)
     }
 }
@@ -26,9 +27,9 @@ function mountElement(vnode: any, container: any) {
     const el = document.createElement(vnode.type);
     vnode.el = el;
     const { children } = vnode;
-    if (typeof children === "string") {
+    if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
         el.textContent = children
-    } else if (Array.isArray(children)) {
+    } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         mountChildren(vnode,el)
     }
     const { props } = vnode;
