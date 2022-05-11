@@ -1,4 +1,3 @@
-import { isObject } from "../shared/index";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component"
 
@@ -7,9 +6,7 @@ export function render(vnode, container) {
 }
 
 function patch(vnode: any, container: any) {
-    //TODO 判断是不是element,如果是element的话就处理element
     //WRONG IN 20220510 vnode.type，如果是虚拟节点就是Object，如果是Element，则其typeof是string，而其值就是需要创建的元素，比如div、p等。
-    debugger
     if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
         processElement(vnode, container)
     } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
@@ -33,9 +30,14 @@ function mountElement(vnode: any, container: any) {
         mountChildren(vnode,el)
     }
     const { props } = vnode;
+    const isOn = (key:string) => {return /^on[A-Z]/.test(key)}//注: 大部分JS的内容都可以表示为string. 因此需要巧妙使用正则表达式和slice等. 
     for (let key in props) {
         let value = props[key]
-        el.setAttribute(key, value)
+        if(isOn(key)){
+            const event = key.slice(2).toLowerCase()
+            el.addEventListener(event,value)
+        }else{
+        el.setAttribute(key, value)}
     }
     container.appendChild(el)
 
