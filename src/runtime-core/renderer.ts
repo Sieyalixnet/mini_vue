@@ -44,7 +44,7 @@ function mountElement(vnode: any, container: any) {
 }
 
 function mountChildren(vnode,container){
-    vnode.children.forEach(element => {
+    vnode.children.forEach((element) => {
         patch(element, container)
     });
 }
