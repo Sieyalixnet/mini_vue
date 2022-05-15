@@ -35,9 +35,12 @@ function setupStatefulComponent(instance){
     instance.proxy = new Proxy({_:instance},PublicInstanceProxyHandlers)
     const {setup} = Component
     if(setup){
+        setCurrentInstance(instance)
         const setupResult = setup(shallowReadonly(instance.props),{emit:instance.emit})
         handleSetupResult(instance,setupResult)
     }
+    setCurrentInstance(null)
+
 
 }
 
@@ -59,3 +62,13 @@ function finishSetup(instance: any) {
 //现在的instance，也就是这个Component大概是:
 //{vnode,type,setupState=rootComponent.setup(),render=rootComponent.render()}
 //以后肯定还会在各层增加相应的情况，特别是在这个setupCompnent和后续的几个调用中
+
+let currentInstance = null
+
+export function getCurrentInstance(){//为什么要放这里呢? 因为是只有在setup的时候才能调用该方法, 所以必须要放在setup过程中. 即使在之后,比如渲染中其实也能获得该实例.
+    return currentInstance
+}
+
+function setCurrentInstance(instance:any){//注: 这个写法可以方便在未来调试时, 若赋值的时候发现赋值错误, 在此断点课便于错误的跟踪.
+    currentInstance=instance
+}
