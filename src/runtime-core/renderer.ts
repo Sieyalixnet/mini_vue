@@ -1,5 +1,6 @@
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component"
+import { Fragment,Text } from "./VNode";
 
 export function render(vnode, container) {
     patch(vnode, container)
@@ -7,11 +8,34 @@ export function render(vnode, container) {
 
 function patch(vnode: any, container: any) {
     //WRONG IN 20220510 vnode.type，如果是虚拟节点就是Object，如果是Element，则其typeof是string，而其值就是需要创建的元素，比如div、p等。
-    if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
-        processElement(vnode, container)
-    } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-        processComponent(vnode, container)
-    }
+    const {type,shapeFlag} = vnode
+
+    switch(type){
+    case(Fragment):
+        processFragment(vnode, container)
+    break;
+    case(Text):
+        processTextVNode(vnode, container)
+    break;
+    default:
+        if (shapeFlag & ShapeFlags.ELEMENT) {
+            processElement(vnode, container)
+        } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+            processComponent(vnode, container)
+        }}
+
+}
+
+function processFragment(vnode: any, container: any) {
+    //WRONG IN 20220515 const {children} = vnode, mountchildren已经是直接能渲染children了, 不用解出来
+    mountChildren(vnode, container);
+}
+
+function processTextVNode(vnode: any, container: any) {
+    const {children} = vnode
+    const textNode = vnode.el =  document.createTextNode(children)
+    container.append(textNode)
+
 }
 
 function processElement(vnode: any, container: any) {
@@ -65,7 +89,8 @@ function mountComponent(initialVNode: any, container: any) {
 function setupRenderEffect(instance: any, initialVNode:any ,container: any) {
     const {proxy} = instance;
     const subTree = instance.render.call(proxy)//由于这里指向了proxy,而render中的this.xx都会通过proxy拿到.而proxy虽然是个{},但是由于它get中可以返回对应的值,所以也就能拿到相应的值了.
-    
+    console.log('Component',initialVNode, 'instance',instance)
+
     //vnode-> patch
     //vnode -> element -> mountElement
     patch(subTree, container)

@@ -50,6 +50,7 @@ function handleSetupResult(instance: any, setupResult: any) {
 }
 function finishSetup(instance: any) {
     const Component = instance.type
+    
     // if(Component.render){
         instance.render = Component.render
     // }//这几步似乎都是在把vnode里面的属性拿到这个实例上。

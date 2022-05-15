@@ -5,10 +5,8 @@ export const Foo = {
         return {};
     },
     render() {
-        const cfoo = h("p",{},"cfoo")
+        const cfoo = h("p",{},"c    foo")
         const age = 18;
         return h("div",{},[renderSlots(this.$slots,"header",{age}),cfoo,renderSlots(this.$slots,"footer")])
     }
-
-
 }
