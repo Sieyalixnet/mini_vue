@@ -1,7 +1,7 @@
 import { extend } from "../shared";
 
 let activeEffect;//临时的全局变量
-let shouldTrack;
+let shouldTrack=false;
 export class reactiveEffect {
     private _fn: any;
     public scheduler: Function | undefined;
@@ -87,15 +87,17 @@ export function triggerEffect(dep){
         if (effect.scheduler) { effect.scheduler() } else { effect.run() }
     })//性能会快点？
     // for(const effect of dep){
-    //     effect.run()
+    //     if (effect.scheduler) { effect.scheduler() } else { effect.run() }
     // }
 
 }
 
 export function effect(fn: any, options: any = {}) {
-    // console.log('this is effect')
+    console.log('this is effect')
+    console.log(fn)
     const scheduler = options.scheduler
     let _effect = new reactiveEffect(fn, scheduler);
+    console.log(_effect)
     extend(_effect, options)//这里就把onStop等绑了进去
     _effect.run()
     const runner: any = _effect.run.bind(_effect)//不用bind会变全局变量

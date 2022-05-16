@@ -1,3 +1,4 @@
+import { proxyRefs } from "../reactivity"
 import { shallowReadonly } from "../reactivity/reactive"
 import { emit } from "./componentEmit"
 import { initProps } from "./componentProps"
@@ -13,6 +14,8 @@ export function createComponentInstance(vnode, parent: any) {
         props: {},
         slots: {},
         emit: () => { },
+        isMounted:false,
+        subTree:{},
         parent,
         provides: parent ? parent.provides : {}
     }
@@ -39,16 +42,17 @@ function setupStatefulComponent(instance) {
     if (setup) {
         setCurrentInstance(instance)
         const setupResult = setup(shallowReadonly(instance.props), { emit: instance.emit })
+        setCurrentInstance(null)
         handleSetupResult(instance, setupResult)
     }
-    setCurrentInstance(null)
+    
 
 
 }
 
 function handleSetupResult(instance: any, setupResult: any) {
     if (typeof setupResult === "object") {
-        instance.setupState = setupResult//如果只是一个obj，他就给实例加上去
+        instance.setupState = proxyRefs(setupResult)//如果只是一个obj，他就给实例加上去
 
     }
     finishSetup(instance)//注:致命错误, 放在if里面的话, 子组件没办法继续解析, 所以子组件会变成undefined
