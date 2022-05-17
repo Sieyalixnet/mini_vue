@@ -5,6 +5,8 @@ export const isObject = (value) => {
 
 }
 
+export const EMPTY_OBJECT = {};
+
 export const hasChanged = (oldValue, newValue) => {
     return !Object.is(oldValue, newValue)
 

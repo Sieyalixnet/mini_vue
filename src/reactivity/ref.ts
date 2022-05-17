@@ -43,8 +43,12 @@ export function isRef(ref){
 }
 
 export function unRef(ref){
-    return isRef(ref)?ref.value:ref;//注: 这个unref是在proxyRefs中调用了, 所以只有返回了reactive, 它才能继续被track. 
+    return isRef(ref)?ref.value:ref;//注, 致命错误: 这个unref是在proxyRefs中调用了, 所以只有返回了reactive, 它才能继续被track. 由于proxyRefs中调用了这个函数, 若返回的是非reactive,则不会继续收集依赖, 感觉应该重新声明一个变量更加合适? 但是这又不完全符合unref的含义.
 
+}
+
+export function returnRawValue(ref){
+    return isRef(ref)? ref._rawValue:ref;
 }
 
 export function proxyRefs(objectWithRef){

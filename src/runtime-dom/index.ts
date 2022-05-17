@@ -4,13 +4,18 @@ function createElement(vnodeType) {
     return document.createElement(vnodeType)
 }
 
-function patchProps(el,key, value) {
+function patchProps(el, key, prevValue, nextValue) {
     const isOn = (key: string) => { return /^on[A-Z]/.test(key) }//注: 大部分JS的内容都可以表示为string. 因此需要巧妙使用正则表达式和slice等. 
     if (isOn(key)) {
         const event = key.slice(2).toLowerCase()
-        el.addEventListener(event, value)
+        el.addEventListener(event, nextValue)
     } else {
-        el.setAttribute(key, value)
+        if (nextValue === undefined || nextValue === null) {
+            el.removeAttribute(key)
+
+        } else {
+            el.setAttribute(key, nextValue)
+        }
     }
 
 }
@@ -18,13 +23,13 @@ function insert(el, container) {
     container.appendChild(el)
 }
 
-const renderer:any = createRenderer({
+const renderer: any = createRenderer({
     createElement, patchProps, insert
 
 })
 
 
-export function createApp(...args){
+export function createApp(...args) {
     return renderer.createApp(...args)
 }
 
