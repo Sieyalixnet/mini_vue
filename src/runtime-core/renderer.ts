@@ -8,7 +8,7 @@ import { Fragment, Text } from "./VNode";
 
 export function createRenderer(options) {
 
-    const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert } = options;
+    const { createElement: hostCreateElement, patchProps: hostPatchProps, insert: hostInsert, remove,setTextContent:hostSetTextContent } = options;
 
     function render(vnode, container) {
         patch(null, vnode, container, null)
@@ -39,7 +39,7 @@ export function createRenderer(options) {
 
     function processFragment(n1, n2: any, container: any, parentComponent) {
         //WRONG IN 20220515 const {children} = vnode, mountchildren已经是直接能渲染children了, 不用解出来
-        mountChildren(n2, container, parentComponent);
+        mountChildren(n2.children, container, parentComponent);
     }
 
     function processTextVNode(n1, n2: any, container: any) {
@@ -53,18 +53,49 @@ export function createRenderer(options) {
         if (!n1) {
             mountElement(n2, container, parentComponent);
         }
-        else { patchElement(n1, n2, container) }
+        else { patchElement(n1, n2, container,parentComponent) }
 
     }
-    function patchElement(n1, n2, container) {
+    function patchElement(n1, n2, container,parentComponent) {
         console.log('patchElement,', 'n1:,\n', n1, 'n2:,\n', n2)
 
         const oldProps = n1.props || EMPTY_OBJECT;
         const newProps = n2.props || EMPTY_OBJECT;
 
-        let el = (n2.el = n1.el);
-
+        let el = (n2.el = n1.el);//el就是元素所在的容器, 比如div等.
+        patchChildren(n1,n2,el,parentComponent)
         patchProp(el, oldProps, newProps)
+    }
+    function patchChildren(n1,n2,container,parentComponent){
+        const c1 = n1.children
+        const c2 = n2.children
+        const {shapeFlag} = n2
+        const prev_shapeFlag = n1.shapeFlag
+        
+        if(shapeFlag & ShapeFlags.TEXT_CHILDREN){
+            if(prev_shapeFlag & ShapeFlags.ARRAY_CHILDREN){
+                unmountChildren(c1)//WRONG IN 20220517 结构问题, 把unmountChildren提出去外面有助于以后的使用
+                hostSetTextContent(container,c2)//注: 属性是textContent !!!!
+            } else {
+                hostSetTextContent(container,c2)
+            }
+            
+        } else {
+            if(prev_shapeFlag & ShapeFlags.TEXT_CHILDREN){
+                hostSetTextContent(container,'')
+                mountChildren(c2,container,parentComponent)
+
+        }
+    
+    }
+
+    }
+
+    function unmountChildren(children){
+        for(let i=0; i<children.length; i++){
+            const el = children[i].el
+            remove(el)
+        }
     }
 
     function patchProp(el, oldProps, newProps) {
@@ -98,7 +129,7 @@ export function createRenderer(options) {
         if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
             el.textContent = children
         } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-            mountChildren(vnode, el, parentComponent)
+            mountChildren(vnode.children, el, parentComponent)
         }
         const { props } = vnode;
         for (let key in props) {
@@ -111,8 +142,8 @@ export function createRenderer(options) {
 
     }
 
-    function mountChildren(vnode, container, parentComponent) {
-        vnode.children.forEach((element) => {
+    function mountChildren(children, container, parentComponent) {
+        children.forEach((element) => {
             patch(null, element, container, parentComponent)
         });
     }

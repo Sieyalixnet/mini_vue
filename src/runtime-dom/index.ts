@@ -23,8 +23,21 @@ function insert(el, container) {
     container.appendChild(el)
 }
 
+function remove(child){
+    const parent = child.parentNode //WRONG IN 20220517 parentNode和removeChild这些必须记住!
+    if(parent){
+        parent.removeChild(child)
+    }
+
+}
+
+function setTextContent(el,text){
+    el.textContent=text
+
+}
+
 const renderer: any = createRenderer({
-    createElement, patchProps, insert
+    createElement, patchProps, insert,remove,setTextContent
 
 })
 
