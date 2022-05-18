@@ -19,8 +19,8 @@ function patchProps(el, key, prevValue, nextValue) {
     }
 
 }
-function insert(el, container) {
-    container.appendChild(el)
+function insert(el, container,anchor) {
+    container.insertBefore(el,anchor||null)//该api表示如果是null就相当于append, 否则就会插入到anchor所在元素之前的位置, 也被称为锚点.
 }
 
 function remove(child){
