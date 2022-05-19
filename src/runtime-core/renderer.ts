@@ -66,6 +66,7 @@ export function createRenderer(options) {
         patchChildren(n1, n2, el, parentComponent, anchor)
         patchProp(el, oldProps, newProps)
     }
+
     function patchChildren(n1, n2, container, parentComponent, anchor) {
         const c1 = n1.children
         const c2 = n2.children
@@ -136,6 +137,48 @@ export function createRenderer(options) {
                     remove(c1[i].el)//要穿元素进去.
                     i++
                 }
+            }
+
+        } else {
+            //删除逻辑
+
+            let s1 = i;
+            let s2 = i;
+            const needToPatch = e2 - s2 + 1//WRONG IN 20220519, 是只要遍历新的节点的多出来的部分就可以了, 又因为两个都是index,所以需要+1来恢复成原来的状态.
+            let patchedChildCount = 0
+            const keyToNewIndexMap = new Map()
+
+            for (let i = s2; i <= e2; i++) {
+                let nextChild = c2[i]
+                keyToNewIndexMap.set(nextChild.key, i)
+            }
+
+            for (let i = s1; i <= e1; i++) {
+                let prevChild = c1[i]
+                let newIndex
+
+                if (patchedChildCount >= needToPatch) {
+                    remove(prevChild.el)
+                    continue;
+                }
+
+                if (prevChild.key !== null) {
+                    newIndex = keyToNewIndexMap.get(prevChild.key)
+                } else {
+                    for (let j = s2; j <= e2; j++) {
+                        if (isSameVNodeType(prevChild, c2[j])) {
+                            newIndex = j
+                        }
+                    }
+
+                }
+                if (!newIndex) {
+                    remove(prevChild.el)
+                } else {
+                    patch(prevChild, c2[newIndex], container, parentComponent, null)
+                    patchedChildCount++
+                }
+
             }
 
         }
