@@ -6,9 +6,10 @@ import { PublicInstanceProxyHandlers } from "./componentPublicInstance"
 import { initSlots } from "./componentSlots"
 
 export function createComponentInstance(vnode, parent: any) {
-    console.log('父组件', parent)
     const component = {
         vnode,
+        next:null,
+        update:()=>{},
         type: vnode.type,
         setupState: {},//这个setupstate本来是后来赋值的,因为proxy的需要,就先给它建立一个,以免导致get时其错误.
         props: {},

@@ -1,6 +1,7 @@
 const PublicPropertiesMap = {
     $el: (i)=>i.vnode.el,
     $slots: (i)=>i.slots,//WRONG IN 20220513, 老是吧instance和vnode上的属性搞混淆, 一定要注意!!, 挂在Component上的是instance上的,挂在vnode上的才需要访问实例的虚拟节点.
+    $props:(i)=>i.props
 
 }
 

@@ -2,6 +2,7 @@ import { effect } from "../reactivity/effect";
 import { EMPTY_OBJECT } from "../shared";
 import { ShapeFlags } from "../shared/ShapeFlags";
 import { createComponentInstance, setupComponent } from "./component"
+import { shouldUpdateComponent } from "./componentUpdateUtils";
 import { createAppAPI } from "./createApp";
 import { Fragment, Text } from "./VNode";
 
@@ -77,7 +78,7 @@ export function createRenderer(options) {
             if (prev_shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
                 unmountChildren(c1)//WRONG IN 20220517 结构问题, 把unmountChildren提出去外面有助于以后的使用
                 hostSetTextContent(container, c2)//注: 属性是textContent !!!!
-            } else if(c1!==c2) {
+            } else if (c1 !== c2) {
                 hostSetTextContent(container, c2)
             }
 
@@ -173,17 +174,17 @@ export function createRenderer(options) {
                 if (prevChild.key !== null) {
                     newIndex = keyToNewIndexMap.get(prevChild.key)
                 } else {
-                    for (let j = s2; j < e2; j++) {
+                    for (let j = s2; j <= e2; j++) {
                         if (isSameVNodeType(prevChild, c2[j])) {
                             newIndex = j
                             break // WRONG IN 20220519 break写到判断外了
                         }
-  
+
                     }
 
                 }
                 //注:下面这个判定必须是undefined, 它可能是null?
-                if (newIndex===undefined) {//WRONG IN 20220519 必须是undefined
+                if (newIndex === undefined) {//WRONG IN 20220519 必须是undefined
                     remove(prevChild.el)
                 } else {
                     if (newIndex >= maxNewIndexSoFar) {
@@ -196,7 +197,7 @@ export function createRenderer(options) {
                 }
             }
 
-            const increasingNewIndexSequece = moved? getSequence(newIndexToOldIndexMap):[];
+            const increasingNewIndexSequece = moved ? getSequence(newIndexToOldIndexMap) : [];
             let increasingSeq_Cursor = increasingNewIndexSequece.length - 1;
             for (let index = needToPatch - 1; index >= 0; index--) {//从后往前遍历, 这样才能确认新创建的内容的位置.
                 let nextIndex = index + s2;//记得这几种转换. i和s2之类的, 它本身就是下标. 由于要拿到c2的内容, 因此要加个头// 因此nextIndex已经是全长了的
@@ -284,19 +285,31 @@ export function createRenderer(options) {
 
 
     function processComponent(n1, n2: any, container: any, parentComponent, anchor) {
-        //TODO 到时还需要有更新组件的功能
-        mountComponent(n2, container, parentComponent, anchor)
+        if (!n1) { mountComponent(n2, container, parentComponent, anchor) }
+        else { updateComponent(n1, n2) }
     }
 
+    function updateComponent(n1, n2) {
+        const instance = (n2.component = n1.component)
+        if (shouldUpdateComponent(n1, n2)) {
+            instance.next = n2//要更新, 才需要next, 
+            instance.update()//因为要instance.update, 所以应该把next赋值到instance上}
+        } else {//不需要更新的话, 就需要把一些旧的可能变动的点赋值到新的虚拟节点中
+            n2.el = n1.el//这部分赋值内容与下方的render中更新组件的赋值是相同的. 虚拟节点的el要更新, 实例的vnode要更新
+            instance.vnode = n2
+        }
+    }
+
+
     function mountComponent(initialVNode: any, container: any, parentComponent, anchor) {
-        const instance = createComponentInstance(initialVNode, parentComponent)
+        const instance = (initialVNode.component = createComponentInstance(initialVNode, parentComponent))//WRONG IN 20220521 component的赋值地方不应该在创建节点时,而是在创建实例时
         setupComponent(instance)
         setupRenderEffect(instance, initialVNode, container, anchor)
     }
 
 
     function setupRenderEffect(instance: any, initialVNode: any, container: any, anchor) {
-        effect(() => {
+        instance.update = effect(() => {
             if (!instance.isMounted) {
                 const { proxy } = instance;
                 const subTree = (instance.subTree = instance.render.call(proxy))//由于这里指向了proxy,而render中的this.xx都会通过proxy拿到.而proxy虽然是个{},但是由于它get中可以返回对应的值,所以也就能拿到相应的值了.
@@ -306,9 +319,14 @@ export function createRenderer(options) {
                 instance.isMounted = true
             } else {
                 const { proxy } = instance;
-                const subTree = instance.render.call(proxy)
+                const { next, vnode } = instance
+                console.log('next', next)
+                if (next) {
+                    next.el = vnode.el
+                    updateComponentPreRender(instance, next)
+                }
+                const subTree = instance.render.call(proxy)//注:更新组件之后才用render.call
                 const prevSubTree = instance.subTree
-
                 instance.subTree = subTree
                 console.log("update, ", 'Component', initialVNode, 'instance', instance)
                 console.log("prev: ", prevSubTree)
@@ -320,6 +338,12 @@ export function createRenderer(options) {
     }
 
     return { createApp: createAppAPI(render) }
+}
+
+function updateComponentPreRender(instance, nextVNode) {
+    instance.vnode = nextVNode
+    instance.next = null
+    instance.props = nextVNode.props
 }
 
 function getSequence(arr: number[]): number[] {
