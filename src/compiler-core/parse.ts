@@ -22,12 +22,30 @@ function parseChildren(context) {
         if (/[a-z]/i.test(context.source[1])) {
             node = parseElement(context)
         }
+    }
 
+    if(!node){
+        node = parseText(context)
     }
     nodes.push(node)
 
     return nodes;
 
+}
+
+function parseText(context){
+    const content = parseTextData(context,context.source.length)
+    return {
+        type: NodeTypes.TEXT,
+        content
+    }
+
+}
+
+function parseTextData(context,length){
+    const content = context.source.slice(0,length)
+    advanceBy(context,content.length)
+    return content
 }
 
 function parseElement(context) {
@@ -59,9 +77,11 @@ function parseInterpolation(context) {
 
     let closeIndex = context.source.indexOf(closeDelemiter, closeDelemiter.length)//找-找到闭合的index
     advanceBy(context, openDelemiter.length)//推-掉本次处理的前置符号
-    let rawContent = context.source.slice(0, closeIndex - closeDelemiter.length)//拿-拿到所需要的部分
+    let rawContent = parseTextData(context, closeIndex - closeDelemiter.length)
+    
+    //拿-拿到所需要的部分
     let content = rawContent.trim()
-    advanceBy(context, closeIndex + closeDelemiter.length)//推-推至本次处理的后置部分
+    advanceBy(context, closeDelemiter.length)//推-推至本次处理的后置部分
     return {
         type: NodeTypes.INTERPOLATION,
         content: {
