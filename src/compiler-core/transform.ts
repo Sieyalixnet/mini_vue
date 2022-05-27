@@ -1,8 +1,13 @@
 
 
-export function transform(ast, options) {
-    const context = createTransformContext(ast, options)
-    traverseNode(ast, context)
+export function transform(root, options={}) {
+    const context = createTransformContext(root, options)
+    traverseNode(root, context)
+    createRootCodegen(root)
+}
+function createRootCodegen(root){
+    root.codegenNode =root.children[0]
+
 }
 
 function createTransformContext(root: any, options: any) {

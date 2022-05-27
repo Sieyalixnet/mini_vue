@@ -17,7 +17,6 @@ function parseChildren(context, ancestors) {
     let nodes: any = []
     let node
     while (!isEnd(context, ancestors)) {
-        console.log(context.source)
         node = undefined
         if (context.source.startsWith("{{")) {
             console.log("Interpo")
