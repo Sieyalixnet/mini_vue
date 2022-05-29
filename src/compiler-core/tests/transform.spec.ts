@@ -8,7 +8,6 @@ describe("transform", () => {
         let ast = baseParse("<div>hi, {{message}}</div>")
 
         function transText(node) {
-            console.log(node)
             if (node.type === NodeTypes.TEXT) { node.content += "mini-vue" }
         }
 
