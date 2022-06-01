@@ -2,13 +2,13 @@ import { NodeTypes } from "../ast"
 
 
 
-export function transformInterpolation(node){
+export function transformExpression(node){//实际就是把content里的content拿出来, 然后在前面加一层ctx就完成了. 
     if(node.type===NodeTypes.INTERPOLATION){
-    node.content=processInterpolation(node.content)
+    node.content=processExpression(node.content)
 }
 }
 
-function processInterpolation(node){
+function processExpression(node){
     node.content =  `_ctx.${node.content}`
     return node
 

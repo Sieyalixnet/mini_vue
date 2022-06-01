@@ -5,6 +5,10 @@ export const isObject = (value) => {
 
 }
 
+export const isString = (value) =>{
+    return (typeof value === "string")
+}
+
 export const EMPTY_OBJECT = {};
 
 export const hasChanged = (oldValue, newValue) => {
