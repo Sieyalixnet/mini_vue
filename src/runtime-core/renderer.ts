@@ -313,7 +313,8 @@ export function createRenderer(options) {
         instance.update = effect(() => {
             if (!instance.isMounted) {
                 const { proxy } = instance;
-                const subTree = (instance.subTree = instance.render.call(proxy))//由于这里指向了proxy,而render中的this.xx都会通过proxy拿到.而proxy虽然是个{},但是由于它get中可以返回对应的值,所以也就能拿到相应的值了.
+                const subTree = (instance.subTree = instance.render.call(proxy,proxy))//由于这里指向了proxy,而render中的this.xx都会通过proxy拿到.而proxy虽然是个{},但是由于它get中可以返回对应的值,所以也就能拿到相应的值了.
+                //第一个proxy是this, 第二个proxy是给的_ctx
                 console.log("init, ", 'Component', initialVNode, 'instance', instance)
                 patch(null, subTree, container, instance, anchor)
                 initialVNode.el = subTree.el//这个subTree的el就是上面Element的el. 也就是从把Element的el不断向上传,这样在外部才能获取到$el.}
@@ -326,7 +327,7 @@ export function createRenderer(options) {
                     next.el = vnode.el
                     updateComponentPreRender(instance, next)
                 }
-                const subTree = instance.render.call(proxy)//注:更新组件之后才用render.call
+                const subTree = instance.render.call(proxy,proxy)//注:更新组件之后才用render.call
                 const prevSubTree = instance.subTree
                 instance.subTree = subTree
                 console.log("update, ", 'Component', initialVNode, 'instance', instance)

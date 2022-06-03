@@ -34,7 +34,7 @@ describe("code generator", () => {
         expect(code).toMatchSnapshot()
     })
 
-    test("composs Element", () => {
+    test("compound Element", () => {
         const ast = baseParse('<div>hi, {{message}}</div>')
         transform(ast,{nodeTransfroms:[transformExpression,transformElement,transformText]})
         console.log(ast)

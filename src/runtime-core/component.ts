@@ -61,6 +61,13 @@ function handleSetupResult(instance: any, setupResult: any) {
 function finishSetup(instance: any) {
     const Component = instance.type
 
+    if(Compiler && !Component.render){
+        if(Component.template){
+            Component.render = Compiler(Component.template)
+
+        }
+
+    }
     // if(Component.render){
     instance.render = Component.render
     // }//这几步似乎都是在把vnode里面的属性拿到这个实例上。
@@ -78,4 +85,10 @@ export function getCurrentInstance() {//为什么要放这里呢? 因为是只�
 
 function setCurrentInstance(instance: any) {//注: 这个写法可以方便在未来调试时, 若赋值的时候发现赋值错误, 在此断点课便于错误的跟踪.
     currentInstance = instance
+}
+
+let Compiler
+
+export function regeisterToCompiler(value){
+    Compiler=value
 }
