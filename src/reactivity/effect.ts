@@ -92,7 +92,12 @@ export function triggerEffect(dep){
 
 }
 
-export function effect(fn: any, options: any = {}) {
+type EffectOptions = {
+    scheduler?
+    onStop?
+}
+
+export function effect(fn: any, options:EffectOptions={}) {
     console.log('this is effect')
     console.log(fn)
     const scheduler = options.scheduler
